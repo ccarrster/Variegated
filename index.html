@@ -9,15 +9,14 @@
 <body>
 <div>
     <form>
-        Columns <input type="number" name="columns" id="columns" value="1">
-        Rows <input type="number" name="rows" id="rows" value="1">
-        <input type="radio" name="direction" value="LeftRight" checked> Left to Right
-        <input type="radio" name="direction" value="RightLeft"> Right to Left
+        Columns <input type="number" name="columns" id="columns" value="30">
+        Rows <input type="number" name="rows" id="rows" value="30">
+        <input id="directionlr" type="radio" name="direction" value="LeftRight" checked> Left to Right
         <input type="radio" name="direction" value="Diagonal"> Diagonal
         <input type="radio" name="colorway" value="Normal" checked> Normal
         <input type="radio" name="colorway" value="Reverse"> Reverse
-        <input type="radio" name="loop" value="NoLoop"> No loop
-        <input type="radio" name="loop" value="YesLoop"> Yes Loop
+        <input id="loopyes" type="radio" name="loop" value="NoLoop" checked> No loop
+        <input id="loopno" type="radio" name="loop" value="YesLoop"> Yes Loop
         <input type="button" value="Generate" onclick="generatePattern()">
     </form>
 </div>
@@ -212,16 +211,48 @@
         var rows = document.getElementById('rows');
         colorGrid = [];
         for(var r = 0; r < rows.value; r++){
+            var gridRow = [];
             for(var c = 0; c < columns.value; c++){
+                gridRow.push("");
+            }
+            colorGrid.push(gridRow);
+        }
 
+        if($('#directionlr').prop("checked")){
+            if($('#loopno').prop("checked")){
+                //Loop left to right
+                for(var row = 0; row < rows.value; row++){
+                    for(var column = 0; column < columns.value; column++){
+                        colorGrid[row][column] = getNextColor();
+                    }
+                }
+            } else {
+                //Left to right not loop
+                var directionPostitive = true;
+                for(var row = 0; row < rows.value; row++){
+                    if(directionPostitive){
+                        for(var column = 0; column < columns.value; column++){
+                            colorGrid[row][column] = getNextColor();
+                        }
+                    } else {
+                        for(var column = columns.value - 1; column >= 0; column--){
+                            colorGrid[row][column] = getNextColor();
+                        }
+                    }
+                    directionPostitive = !directionPostitive;
+                }
             }
         }
+
+
+        console.log(colorGrid);
+
         var tableString = '';
         tableString += '<table>';
         for(var row = 0; row < rows.value; row++){
             tableString += '<tr>';
             for(var column = 0; column < columns.value; column++){
-                tableString += '<td style="height: 20px; width: 20px; background-color: '+getNextColor()+';"></td>';
+                tableString += '<td style="height: 20px; width: 20px; background-color: '+colorGrid[row][column]+';"></td>';
             }
             tableString += '</tr>';
         }
@@ -233,7 +264,7 @@
 
     var record = false;
     document.body.onkeyup = function(e){
-        if(e.keyCode == 32){
+        if(e.keyCode == 82){
             record = !record;
             if(record === true){
                 $('#recording').html('Recording');
